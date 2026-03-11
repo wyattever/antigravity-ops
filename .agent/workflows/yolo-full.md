@@ -11,18 +11,18 @@ This workflow enables full autonomy for the agent by allowing it to execute comm
 
 // turbo-all
 1.  **Validate Environment**: Run the health check and validation script.
-    `git status && bash scripts/run-workflow.sh validate-autonomous-mode --json`
+    `bash ~/Agents/antigravity-ops/scripts/run-workflow.sh validate-autonomous-mode --json`
 
 2.  **Display Project Paths**: show the current project development and resources folder mappings.
-    `bash scripts/run-workflow.sh display-project-paths`
+    `bash ~/Agents/antigravity-ops/scripts/run-workflow.sh display-project-paths`
 
 3.  **Show Project Startup**: Display the `AGENT-STARTUP.md` file if it exists in the resources folder.
-    `bash scripts/run-workflow.sh show-project-startup`
+    `bash ~/Agents/antigravity-ops/scripts/run-workflow.sh show-project-startup`
 
 4.  **Launch start-project**: The macOS folder picker will appear to confirm/designate project paths.
-    `bash scripts/run-workflow.sh start-project`
+    `bash ~/Agents/antigravity-ops/scripts/run-workflow.sh start-project`
 
 5.  **Refresh Setup**: Display the project startup context again after paths are updated.
-    `bash scripts/run-workflow.sh show-project-startup`
+    `bash ~/Agents/antigravity-ops/scripts/run-workflow.sh show-project-startup`
 
 **Note**: This workflow uses the `// turbo-all` annotation to bypass command confirmations. It is the primary entry point for deep autonomous work in the Antigravity IDE.
