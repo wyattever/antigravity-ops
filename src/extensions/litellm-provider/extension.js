@@ -21,6 +21,13 @@ class SovereignSidebarProvider {
         this._view = webviewView;
         webviewView.webview.options = { enableScripts: true };
         webviewView.webview.html = this._getHtmlForWebview(webviewView.webview);
+
+        webviewView.webview.onDidReceiveMessage(async (message) => {
+            if (message.command === 'triggerCheckpoint') {
+                const SUP_PROMPT = "PAUSE. I am initiating a Status Checkpoint. Before we proceed, please provide a brief 'State Export' per the SUP protocol. Wait for my 'ACK' to resume.";
+                vscode.commands.executeCommand('ask.antigravity', SUP_PROMPT);
+            }
+        });
     }
 
     updateStatus(agent, status, log = null) {
@@ -63,6 +70,8 @@ class SovereignSidebarProvider {
                 
                 .rollback-module { border-top: 1px solid #30363d; padding-top: 15px; margin-top: 20px; }
                 .snapshot-item { font-size: 0.85em; background: #0d1117; padding: 5px; margin-bottom: 5px; border-radius: 4px; border: 1px solid #21262d; }
+                .sup-btn { width: 100%; padding: 10px; background: #e67e22; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 10px; margin-bottom: 10px; }
+                .sup-btn:hover { background: #d68910; }
                 .panic-btn { width: 100%; padding: 10px; background: #da3633; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 10px; }
                 .panic-btn:hover { background: #f85149; }
                 
@@ -80,6 +89,7 @@ class SovereignSidebarProvider {
                 </div>
             </div>
 
+            <button class="sup-btn" onclick="triggerCheckpoint()">Initiate Status Checkpoint (SUP)</button>
             <div class="rollback-module">
                 <h4>Recent Snapshots</h4>
                 <div id="history"></div>
@@ -92,6 +102,10 @@ class SovereignSidebarProvider {
                 const statusEl = document.getElementById('status');
                 const logsEl = document.getElementById('logs');
                 const historyEl = document.getElementById('history');
+
+                function triggerCheckpoint() {
+                    vscode.postMessage({ command: 'triggerCheckpoint' });
+                }
 
                 function rollback() {
                     vscode.postMessage({ command: 'panicRollback' });
