@@ -34,6 +34,10 @@
       {
         "command": "ask.antigravity",
         "title": "Ask Antigravity (ACP)"
+      },
+      {
+        "command": "panic.rollback",
+        "title": "🚨 ACP: Rollback Workspace"
       }
     ]
   }

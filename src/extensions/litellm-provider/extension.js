@@ -2,6 +2,7 @@ const vscode = require('vscode');
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
+const { execSync } = require('child_process');
 
 /**
  * ACP Phase 3: Enhanced UX & Observability
@@ -26,6 +27,23 @@ class SovereignSidebarProvider {
         console.log(`[ACP-SIDEBAR] Update: ${agent} | ${status} | ${log}`);
         if (this._view) {
             this._view.webview.postMessage({ command: 'update', agent, status, log });
+            // If log starts with Snapshot created, refresh history
+            if (log && log.includes('Snapshot created')) {
+                this.updateHistory();
+            }
+        }
+    }
+
+    updateHistory() {
+        if (!vscode.workspace.workspaceFolders) return;
+        const workspacePath = vscode.workspace.workspaceFolders[0].uri.fsPath;
+        try {
+            const history = execSync('git log -5 --grep="ACP-SNAPSHOT" --format="%h|%s|%ar"', { cwd: workspacePath }).toString();
+            if (this._view) {
+                this._view.webview.postMessage({ command: 'updateHistory', history });
+            }
+        } catch (e) {
+            console.error('Failed to fetch snapshot history:', e);
         }
     }
 
@@ -40,8 +58,14 @@ class SovereignSidebarProvider {
                 .status-badge { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 0.8em; background: #238636; color: white; }
                 .status-badge.thinking { background: #9e6a03; }
                 .status-badge.idle { background: #484f58; }
-                .log-section { font-family: 'Consolas', monospace; font-size: 0.9em; color: #8b949e; border-top: 1px solid #30363d; padding-top: 10px; margin-top: 10px; }
+                .log-section { font-family: 'Consolas', monospace; font-size: 0.9em; color: #8b949e; border-top: 1px solid #30363d; padding-top: 10px; margin-top: 10px; max-height: 150px; overflow-y: auto; }
                 .log-entry { margin-bottom: 4px; border-left: 2px solid #58a6ff; padding-left: 8px; }
+                
+                .rollback-module { border-top: 1px solid #30363d; padding-top: 15px; margin-top: 20px; }
+                .snapshot-item { font-size: 0.85em; background: #0d1117; padding: 5px; margin-bottom: 5px; border-radius: 4px; border: 1px solid #21262d; }
+                .panic-btn { width: 100%; padding: 10px; background: #da3633; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+                .panic-btn:hover { background: #f85149; }
+                
                 .pulse { animation: pulse-animation 2s infinite; }
                 @keyframes pulse-animation { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
             </style>
@@ -55,15 +79,26 @@ class SovereignSidebarProvider {
                     <div class="log-entry">Control Plane Online</div>
                 </div>
             </div>
+
+            <div class="rollback-module">
+                <h4>Recent Snapshots</h4>
+                <div id="history"></div>
+                <button class="panic-btn" onclick="rollback()">🚨 PANIC: ROLLBACK</button>
+            </div>
             
             <script>
                 const vscode = acquireVsCodeApi();
                 const agentEl = document.getElementById('agent');
                 const statusEl = document.getElementById('status');
                 const logsEl = document.getElementById('logs');
+                const historyEl = document.getElementById('history');
+
+                function rollback() {
+                    vscode.postMessage({ command: 'panicRollback' });
+                }
 
                 window.addEventListener('message', event => {
-                    const { command, agent, status, log } = event.data;
+                    const { command, agent, status, log, history } = event.data;
                     if (command === 'update') {
                         agentEl.innerText = agent;
                         statusEl.innerText = status;
@@ -76,6 +111,17 @@ class SovereignSidebarProvider {
                             entry.innerText = '[' + new Date().toLocaleTimeString() + '] ' + log;
                             logsEl.prepend(entry);
                         }
+                    } else if (command === 'updateHistory') {
+                        historyEl.innerHTML = '';
+                        if (!history) return;
+                        history.trim().split('\\n').forEach(line => {
+                            if (!line) return;
+                            const [hash, msg, time] = line.split('|');
+                            const item = document.createElement('div');
+                            item.className = 'snapshot-item';
+                            item.innerHTML = '<b>' + hash + '</b>: ' + msg.substring(13, 25) + '... <br><small>' + time + '</small>';
+                            historyEl.appendChild(item);
+                        });
                     }
                 });
             </script>
@@ -133,9 +179,30 @@ function activate(context) {
                 await handleStreamingChat(message.text, panel);
             }
         });
+
+        sidebarProvider._view.webview.onDidReceiveMessage(async (message) => {
+            if (message.command === 'panicRollback') {
+                await vscode.commands.executeCommand('panic.rollback');
+            }
+        });
     });
 
-    context.subscriptions.push(completionProvider, chatCommand, sidebarReg);
+    const rollbackCommand = vscode.commands.registerCommand('panic.rollback', async () => {
+        const choice = await vscode.window.showWarningMessage('Are you sure you want to rollback to the last snapshot? This will reset the workspace.', 'ROLLBACK', 'Cancel');
+        if (choice === 'ROLLBACK') {
+            const workspacePath = vscode.workspace.workspaceFolders[0].uri.fsPath;
+            try {
+                execSync('git reset --hard HEAD~1', { cwd: workspacePath });
+                vscode.window.showInformationMessage('Rollback Successful.');
+                sidebarProvider.updateStatus('SYNAPSE', 'IDLE', 'PANIC: Rollback Successful');
+                sidebarProvider.updateHistory();
+            } catch (err) {
+                vscode.window.showErrorMessage(`Rollback Failed: ${err.message}`);
+            }
+        }
+    });
+
+    context.subscriptions.push(completionProvider, chatCommand, sidebarReg, rollbackCommand);
 }
 
 /**
@@ -234,6 +301,20 @@ async function handleStreamingChat(prompt, panel) {
                     required: ["path"]
                 }
             }
+        },
+        {
+            type: "function",
+            function: {
+                name: "workspace_snapshot",
+                description: "Creates a Git checkpoint before any destructive actions.",
+                parameters: {
+                    type: "object",
+                    properties: {
+                        traceId: { type: "string", description: "The current AND-TRACE ID" }
+                    },
+                    required: ["traceId"]
+                }
+            }
         }
     ];
 
@@ -313,10 +394,31 @@ async function executeTool(toolCall) {
             const content = fs.readFileSync(targetPath, 'utf8');
             sidebarProvider.updateStatus('SYNAPSE', 'EXECUTING', `Success: Read ${args.path}`);
             return content;
+        } else if (name === 'workspace_snapshot') {
+            return await createSnapshot(args.traceId);
         }
     } catch (err) {
         sidebarProvider.updateStatus('SYNAPSE', 'EXECUTING', `Error: ${err.message}`);
         return `Error executing ${name}: ${err.message}`;
+    }
+}
+
+/**
+ * SSP Core: Automated Pre-Action Snapshot
+ */
+async function createSnapshot(traceId) {
+    if (!vscode.workspace.workspaceFolders) return "Error: No workspace open.";
+    const workspacePath = vscode.workspace.workspaceFolders[0].uri.fsPath;
+    
+    try {
+        sidebarProvider.updateStatus('SYNAPSE', 'EXECUTING', `Creating Snapshot...`);
+        execSync('git add .', { cwd: workspacePath });
+        execSync(`git commit -m "ACP-SNAPSHOT: ${traceId}" --allow-empty`, { cwd: workspacePath });
+        const commitHash = execSync('git rev-parse --short HEAD', { cwd: workspacePath }).toString().trim();
+        sidebarProvider.updateStatus('SYNAPSE', 'EXECUTING', `Snapshot created: ${commitHash}`);
+        return `Snapshot created: ACP-SNAPSHOT: ${traceId} (Hash: ${commitHash})`;
+    } catch (err) {
+        return `Snapshot skipped (likely no changes or git not init): ${err.message}`;
     }
 }
 

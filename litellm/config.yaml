@@ -12,9 +12,7 @@ general_settings:
   master_key: sk-antigravity-admin
   database_url: "postgresql://litellm_admin:sk-antigravity-db-pass@db:5432/litellm_db"
 
-callbacks:
-  - acp_logging_handler.proxy_custom_logger
-
 litellm_settings:
   drop_params: true
-  set_verbose: false
+  set_verbose: true
+  callbacks: ["acp_logging_handler.proxy_custom_logger"]
