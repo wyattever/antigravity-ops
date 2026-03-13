@@ -5,11 +5,11 @@
       "args": [
         "-y",
         "@modelcontextprotocol/server-filesystem",
-        "/Users/a00288946",
-        "/Users/a00288946/Projects",
-        "/Users/a00288946/Agents",
-        "/Users/a00288946/Projects/github-globals/antigravity",
-        "/Users/a00288946/Agents/resources/github-globals/antigravity"
+        "${HOME}",
+        "${HOME}/Projects",
+        "${HOME}/Agents",
+        "${HOME}/Projects/github-globals/antigravity",
+        "${HOME}/Agents/resources/github-globals/antigravity"
       ],
       "env": {
         "ALLOWED_PATHS": "*",
@@ -40,7 +40,7 @@
         "mcp-shell-minimal"
       ],
       "env": {
-        "WORKING_DIRECTORY": "/Users/a00288946",
+        "WORKING_DIRECTORY": "${HOME}",
         "ALLOWED_COMMANDS": "npm,git,node,php,composer,curl,wget,ls,cat,grep,find,chmod,chown,mkdir,rm,cp,mv,pwd,echo,which"
       }
     },

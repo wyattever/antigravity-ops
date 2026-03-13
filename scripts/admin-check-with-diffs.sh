@@ -7,7 +7,7 @@
 
 set -euo pipefail
 
-OTTER_ADMIN_LOCAL="${OTTER_ADMIN_LOCAL:-/Users/a00288946/Projects/otter/admin}"
+OTTER_ADMIN_LOCAL="${OTTER_ADMIN_LOCAL:-$HOME/Projects/otter/admin}"
 REMOTE_HOST="webaim-deploy"
 REMOTE_BASE="/var/websites/webaim/htdocs/otter/admin"
 REMOTE_RSYNC="${REMOTE_HOST}:${REMOTE_BASE}/"

@@ -14,7 +14,10 @@ class Dispatcher:
     and environmental state (active-provider.json).
     """
     
-    def __init__(self, ops_root: str = "/Users/a00288946/Agents/antigravity-ops"):
+    def __init__(self, ops_root: Optional[str] = None):
+        if ops_root is None:
+            ag_home = os.environ.get('AG_HOME', os.path.expanduser('~/Agents'))
+            ops_root = os.path.join(ag_home, "antigravity-ops")
         self.ops_root = ops_root
         self.config_path = os.path.join(ops_root, "config/active-provider.json")
         self.proxy_url = "http://localhost:8000"

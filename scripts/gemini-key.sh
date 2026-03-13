@@ -3,8 +3,8 @@
 # Switch operational context to Gemini API
 set -e
 
-ENV_FILE="/Users/a00288946/Agents/antigravity-ops/.env"
-CONFIG_DIR="/Users/a00288946/Agents/antigravity-ops/config"
+ENV_FILE="${AG_HOME:-$HOME/Agents}/antigravity-ops/.env"
+CONFIG_DIR="${AG_HOME:-$HOME/Agents}/antigravity-ops/config"
 STATE_FILE="$CONFIG_DIR/active-provider.json"
 
 echo "🔄 Switching to Gemini context..."

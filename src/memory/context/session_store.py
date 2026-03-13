@@ -10,7 +10,10 @@ class SessionStore:
     Provides 'Episodic Memory' for the control plane.
     """
     
-    def __init__(self, db_path: str = "/Users/a00288946/Agents/antigravity-ops/memory/antigravity.db"):
+    def __init__(self, db_path: Optional[str] = None):
+        if db_path is None:
+            ag_home = os.environ.get('AG_HOME', os.path.expanduser('~/Agents'))
+            db_path = os.path.join(ag_home, "antigravity-ops/memory/antigravity.db")
         self.db_path = db_path
         os.makedirs(os.path.dirname(db_path), exist_ok=True)
         self._init_db()

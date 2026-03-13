@@ -6,7 +6,8 @@ import json
 def test_mission_persistence():
     print("🎬 Testing Antigravity Mission Persistence...")
     
-    db_path = "/Users/a00288946/Agents/antigravity-ops/memory/test_antigravity.db"
+    ag_home = os.environ.get('AG_HOME', os.path.expanduser('~/Agents'))
+    db_path = os.path.join(ag_home, "antigravity-ops/memory/test_antigravity.db")
     if os.path.exists(db_path):
         os.remove(db_path)
         

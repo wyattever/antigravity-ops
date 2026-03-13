@@ -4,7 +4,7 @@
 
 set -eo pipefail
 
-OPS_DIR="/Users/a00288946/Agents/antigravity-ops"
+OPS_DIR="${AG_HOME:-$HOME/Agents}/antigravity-ops"
 LITELLM_DIR="$OPS_DIR/litellm"
 LOG_FILE="$LITELLM_DIR/litellm_silent.log"
 

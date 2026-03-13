@@ -11,7 +11,11 @@ class MissionLogger:
     Provides an 'Audit Trail' for autonomous operations.
     """
     
-    def __init__(self, log_dir: str = "/Users/a00288946/Agents/antigravity-ops/logs"):
+    from typing import Optional
+    def __init__(self, log_dir: Optional[str] = None):
+        if log_dir is None:
+            ag_home = os.environ.get('AG_HOME', os.path.expanduser('~/Agents'))
+            log_dir = os.path.join(ag_home, "antigravity-ops/logs")
         self.log_dir = log_dir
         os.makedirs(log_dir, exist_ok=True)
         self.log_file = os.path.join(log_dir, "mission_log.jsonl")

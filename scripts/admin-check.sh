@@ -6,7 +6,7 @@
 
 set -euo pipefail
 
-OTTER_ADMIN_LOCAL="${OTTER_ADMIN_LOCAL:-/Users/a00288946/Projects/otter/admin}"
+OTTER_ADMIN_LOCAL="${OTTER_ADMIN_LOCAL:-$HOME/Projects/otter/admin}"
 REMOTE="webaim-deploy:/var/websites/webaim/htdocs/otter/admin/"
 
 echo "Admin check (dry-run): server → local"

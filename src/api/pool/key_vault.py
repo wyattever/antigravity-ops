@@ -1,5 +1,5 @@
 import os
-from typing import List, Dict
+from typing import List, Dict, Optional
 
 class KeyVault:
     """
@@ -7,7 +7,10 @@ class KeyVault:
     Responsibility: Load and provide access to the pool of API keys.
     """
     
-    def __init__(self, env_path: str = "/Users/a00288946/Agents/antigravity-ops/.env"):
+    def __init__(self, env_path: Optional[str] = None):
+        if env_path is None:
+            ag_home = os.environ.get('AG_HOME', os.path.expanduser('~/Agents'))
+            env_path = os.path.join(ag_home, "antigravity-ops/.env")
         self.env_path = env_path
         self.keys: Dict[str, List[str]] = {
             "gemini": [],

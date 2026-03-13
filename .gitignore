@@ -7,6 +7,7 @@ memory/test_antigravity.db
 
 # Virtual Environments
 litellm/venv/
+node_modules/
 venv/
 env/
 
@@ -19,3 +20,4 @@ __pycache__/
 .idea/
 .vscode/
 .gemini/
+.aider*

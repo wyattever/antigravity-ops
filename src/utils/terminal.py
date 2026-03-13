@@ -9,7 +9,11 @@ class SafeTerminalTool:
     Safeguards: Prevents destructive commands and respects the Antigravity Ops directory.
     """
     
-    def __init__(self, workspace_root: str = "/Users/a00288946/Agents/antigravity-ops"):
+    from typing import Optional
+    def __init__(self, workspace_root: Optional[str] = None):
+        if workspace_root is None:
+            ag_home = os.environ.get('AG_HOME', os.path.expanduser('~/Agents'))
+            workspace_root = os.path.join(ag_home, "antigravity-ops")
         self.workspace_root = workspace_root
         # Basic protection list (not exhaustive)
         self.blacklist = ["rm -rf /", "sudo", "mkfs", "dd"]
