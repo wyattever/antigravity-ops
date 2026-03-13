@@ -24,12 +24,21 @@ services:
     env_file: .env
     environment:
       - DATABASE_URL=postgresql://litellm_admin:sk-antigravity-db-pass@db:5432/litellm_db
+      - LITELLM_LOG=INFO
+      - LITELLM_MCP_ENABLED=True
+      - PYTHONPATH=/app
     ports:
       - "8000:8000"
     volumes:
-      - ./litellm/config.yaml:/app/config.yaml
+      - ./acp_hooks:/app/acp_hooks
+      - ./acp_hooks/config.yaml:/app/config.yaml
       - ./acp_logging_handler.py:/app/acp_logging_handler.py
-    entrypoint: /bin/sh -c "pip install uv && uv pip install psycopg2-binary --system && litellm --config /app/config.yaml --port 8000 --host 0.0.0.0 --detailed_debug"
+    entrypoint: >
+      /bin/sh -c "
+      pip install uv &&
+      uv pip install psycopg2-binary mcp --system &&
+      litellm --config /app/config.yaml --port 8000 --host 0.0.0.0
+      "
     depends_on:
       db:
         condition: service_healthy

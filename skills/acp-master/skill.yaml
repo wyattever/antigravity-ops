@@ -1,0 +1,23 @@
+name: acp-master
+version: 1.0.0
+description: Antigravity Control Plane Master Bridge
+tools:
+  - name: intercept_traffic
+    description: Routes traffic through the local LiteLLM gateway for auditing and control.
+    parameters:
+      type: object
+      properties:
+        request:
+          type: string
+          description: The raw request or prompt to be processed.
+        session_id:
+          type: string
+          description: Unique identifier for the current session.
+        trace_id:
+          type: string
+          description: Unique identifier for the specific trace.
+      required:
+        - request
+    handler:
+      type: mcp
+      endpoint: http://localhost:8000/mcp

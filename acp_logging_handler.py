@@ -12,7 +12,7 @@ class ACPCustomLogger(CustomLogger):
     ACP Phase 3: PostgreSQL Telemetry Handler
     Intercepts X-AND-TRACE and X-AND-SESSION headers for sovereign logging.
     """
-    def log_pre_api_call(self, model, messages, kwargs, print_verbose):
+    def log_pre_api_call(self, model, messages, kwargs, print_verbose=None, **extra_kwargs):
         print(f"DEBUG-ACP: Calling model {model} (pre-api)")
 
     def log_post_api_call(self, kwargs, response_obj, start_time, end_time):
