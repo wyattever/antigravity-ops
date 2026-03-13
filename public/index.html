@@ -3,216 +3,105 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Forge Ready | v11.4</title>
+    <title>Primary Control | v11.5</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Roboto:wght@400;500&family=Roboto+Mono&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-functions-compat.js"></script>
     <style>
-        :root { 
-            --google-blue: #1a73e8; 
-            --google-red: #d93025; 
-            --google-green: #188038; 
-            --google-yellow: #f9ab00;
-            --bg-gray: #f8f9fa;
-        }
+        :root { --google-blue: #1a73e8; --bg-gray: #f8f9fa; }
         body { 
-            font-family: 'Roboto', sans-serif; 
-            background-color: var(--bg-gray); 
-            color: #3c4043;
-            -webkit-font-smoothing: antialiased;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
+            font-family: 'Roboto', sans-serif; background-color: var(--bg-gray); color: #3c4043;
+            -webkit-font-smoothing: antialiased; height: 100vh; display: flex; flex-direction: column; overflow: hidden;
         }
-        h1, h2, h3, .google-sans { font-family: 'Google Sans', sans-serif; }
+        .google-sans { font-family: 'Google Sans', sans-serif; }
         .mono { font-family: 'Roboto Mono', monospace; }
-        
-        .tab-active { border-bottom: 3px solid var(--google-blue); color: var(--google-blue); font-weight: 500; }
-        
-        #chat-container { height: calc(100vh - 240px); }
-        .message-bubble { max-width: 85%; padding: 10px 14px; border-radius: 18px; font-size: 14px; line-height: 1.4; margin-bottom: 8px; }
+        .pulse-emerald { box-shadow: 0 0 8px rgba(24, 128, 56, 0.6); animation: pulse-ring 2s infinite; }
+        @keyframes pulse-ring { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.5; transform: scale(1.2); } }
+        #chat-container { flex: 1; overflow-y: auto; padding: 1rem; background-color: #f1f3f4; display: flex; flex-direction: column; gap: 0.5rem; }
+        .message-bubble { max-width: 85%; padding: 10px 14px; border-radius: 18px; font-size: 14px; line-height: 1.4; margin-bottom: 4px; }
         .message-user { background-color: var(--google-blue); color: white; align-self: flex-end; border-bottom-right-radius: 4px; }
         .message-agent { background-color: white; color: #3c4043; border: 1px solid #dadce0; align-self: flex-start; border-bottom-left-radius: 4px; }
-
-        .pulse-amber { 
-            box-shadow: 0 0 8px rgba(249, 171, 0, 0.6);
-            animation: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-        }
-        @keyframes pulse-ring { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.5; transform: scale(1.2); } }
-
-        .forge-btn {
-            background: linear-gradient(135deg, #1a73e8 0%, #1557b0 100%);
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-        }
+        .safe-footer-buffer { height: 80px; background-color: white; }
     </style>
 </head>
-<body class="flex flex-col overflow-hidden">
-
-    <!-- HEADER -->
+<body class="flex flex-col">
     <nav class="bg-white border-b border-gray-200 px-4 py-3 flex justify-between items-center shrink-0">
         <div class="flex items-center gap-3">
-            <div id="status-dot" class="w-2.5 h-2.5 rounded-full bg-emerald-600 shadow-[0_0_8px_rgba(24,128,56,0.6)]"></div>
-            <h1 class="text-lg font-medium text-gray-800 tracking-tight">Forge <span class="text-blue-600">Ready</span> <span class="text-[10px] text-zinc-400 align-top ml-1">v11.4</span></h1>
+            <div id="status-dot" class="w-2.5 h-2.5 rounded-full bg-emerald-600 pulse-emerald"></div>
+            <h1 class="text-lg font-medium text-gray-800 tracking-tight google-sans">Primary <span class="text-blue-600">Control</span></h1>
         </div>
         <div class="flex items-center gap-3">
-            <span id="header-clock" class="text-[10px] mono text-gray-500 font-medium">--:--:-- UTC</span>
-            <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-blue-700 font-bold text-xs ring-1 ring-blue-200">G</div>
+            <span id="header-clock" class="text-xs mono text-gray-700 font-bold">--:-- MT</span>
+            <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-blue-700 font-bold text-xs">G</div>
         </div>
     </nav>
-
-    <!-- TABS -->
-    <div class="bg-white border-b border-gray-200 flex shrink-0">
-        <button id="tab-chat" class="flex-1 py-3 text-sm text-gray-500 tab-active transition-all">Chat</button>
-        <button id="tab-forge" class="flex-1 py-3 text-sm text-gray-500 transition-all">Forge</button>
-        <button id="tab-logs" class="flex-1 py-3 text-sm text-gray-500 transition-all">Logs</button>
+    <div class="bg-white border-b border-gray-100 px-4 py-2 flex justify-between items-center shrink-0">
+        <div class="flex items-center gap-4">
+            <div class="flex items-center gap-1">
+                <i data-lucide="cpu" class="w-3 h-3 text-gray-400"></i>
+                <span class="text-[9px] font-bold text-gray-400 uppercase">M4 Ghost</span>
+            </div>
+            <div class="flex items-center gap-1">
+                <i data-lucide="cloud" class="w-3 h-3 text-blue-500"></i>
+                <span class="text-[9px] font-bold text-gray-400 uppercase tracking-tighter">Sentinel v1</span>
+            </div>
+        </div>
+        <button id="ignite-btn" class="bg-blue-600 text-white text-[9px] font-black px-4 py-1.5 rounded-full uppercase tracking-widest active:scale-95 transition-all">
+            Ignite Forge
+        </button>
     </div>
-
-    <!-- MAIN VIEWS -->
-    <main id="view-chat" class="flex-1 overflow-y-auto p-4 flex flex-col gap-2 bg-[#f1f3f4]">
+    <main id="chat-container">
         <div id="chat-messages" class="flex flex-col w-full">
             <div class="message-bubble message-agent">
-                Sovereign Forge initialized. <strong>v11.4</strong> is ready for ignition.
+                <strong>Primary Control v11.5</strong> active. Mountain Time synced. Forge initialized.
             </div>
         </div>
     </main>
-
-    <main id="view-forge" class="hidden flex-1 p-6 space-y-6 bg-white overflow-y-auto">
-        <div class="space-y-4">
-            <div class="p-4 google-card bg-blue-50/30 border-blue-100">
-                <div class="flex items-center gap-3 mb-2">
-                    <i data-lucide="zap" class="w-5 h-5 text-amber-500"></i>
-                    <h2 class="google-sans font-medium text-blue-900">Cloud Ignition</h2>
-                </div>
-                <p class="text-xs text-blue-700 leading-relaxed">Push local changes to the Cloud Sentinel via the Sovereign Forge pipeline.</p>
-            </div>
-
-            <button id="ignite-btn" class="forge-btn w-full text-white py-5 rounded-xl font-bold uppercase tracking-widest text-xs flex items-center justify-center gap-3 active:scale-95 transition-all shadow-lg">
-                <i data-lucide="flame" class="w-5 h-5"></i>
-                Ignite Sovereign Forge
-            </button>
-
-            <div id="forge-status" class="hidden p-4 rounded-lg bg-zinc-900 text-emerald-400 mono text-[10px] space-y-1">
-                <p>> [SYSTEM] INITIALIZING FORGE...</p>
-                <p id="forge-step">> WAITING FOR TRIGGER...</p>
-            </div>
-        </div>
-
-        <div class="grid grid-cols-2 gap-4">
-            <div class="google-card p-4">
-                <i data-lucide="cloud-lightning" class="w-5 h-5 text-blue-500 mb-2"></i>
-                <p class="text-[10px] uppercase font-bold text-gray-400 tracking-wider">Gateway</p>
-                <p class="text-xs font-medium text-gray-700">Sentinel v1.2</p>
-            </div>
-            <div class="google-card p-4">
-                <i data-lucide="shield" class="w-5 h-5 text-emerald-500 mb-2"></i>
-                <p class="text-[10px] uppercase font-bold text-gray-400 tracking-wider">Security</p>
-                <p class="text-xs font-medium text-gray-700">SDF-V1 Spec</p>
-            </div>
-        </div>
-    </main>
-
-    <main id="view-logs" class="hidden flex-1 bg-zinc-950 p-4 overflow-y-auto mono text-[11px] text-zinc-500 leading-relaxed">
-        <div class="space-y-1">
-            <p><span class="text-zinc-700">[16:00:22]</span> <span class="text-emerald-500">INFO</span> BRAIN_MIGRATION_SUCCESS</p>
-            <p><span class="text-zinc-700">[16:15:45]</span> <span class="text-blue-500">INFO</span> SENTINEL_V1_HEARTBEAT_STABLE</p>
-            <p><span class="text-zinc-700">[16:30:11]</span> <span class="text-amber-500">WARN</span> M4_GHOST_MODE_ENABLED</p>
-            <p id="live-logs"></p>
-        </div>
-    </main>
-
-    <!-- FOOTER/INPUT -->
-    <div id="footer-chat" class="bg-white border-t border-gray-200 p-3 pb-8 shrink-0">
-        <form id="chat-form" class="flex gap-2 max-w-screen-md mx-auto">
-            <input type="text" id="user-input" placeholder="Ask the Sentinel..." class="flex-1 bg-gray-100 border border-transparent focus:bg-white focus:border-blue-500 rounded-full px-5 py-3 text-sm outline-none transition-all">
-            <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white w-11 h-11 rounded-full flex items-center justify-center shadow-md active:scale-90 transition-all">
+    <div class="bg-white border-t border-gray-200 p-3 shrink-0">
+        <form id="chat-form" class="flex gap-2 max-w-screen-md mx-auto mb-2">
+            <input type="text" id="user-input" placeholder="Issue mandate..." class="flex-1 bg-gray-100 border border-transparent focus:bg-white focus:border-blue-500 rounded-full px-5 py-3 text-sm outline-none transition-all">
+            <button type="submit" class="bg-blue-600 text-white w-11 h-11 rounded-full flex items-center justify-center shadow-md active:scale-90 transition-all">
                 <i data-lucide="send" class="w-5 h-5"></i>
             </button>
         </form>
+        <div class="safe-footer-buffer"></div>
     </div>
-
     <script>
-        // CONFIG
         const GATEWAY_URL = "https://litellm-gateway-319843614554.us-central1.run.app";
-        
-        // FIREBASE INIT (Placeholder - User will inject real config)
-        const firebaseConfig = { projectId: "hazel-service-489900-f3" };
-        firebase.initializeApp(firebaseConfig);
-        const functions = firebase.functions();
-
-        // UI ELEMENTS
-        const tabs = ['chat', 'forge', 'logs'];
-        const clock = document.getElementById('header-clock');
-        const igniteBtn = document.getElementById('ignite-btn');
-        const forgeStatus = document.getElementById('forge-status');
-        const forgeStep = document.getElementById('forge-step');
-
-        // CLOCK
-        setInterval(() => {
-            clock.textContent = new Date().toISOString().split('T')[1].split('.')[0] + ' UTC';
-        }, 1000);
-        lucide.createIcons();
-
-        // TAB NAVIGATION
-        tabs.forEach(tab => {
-            document.getElementById(`tab-${tab}`).addEventListener('click', () => {
-                tabs.forEach(t => {
-                    document.getElementById(`view-${t}`).classList.add('hidden');
-                    document.getElementById(`tab-${t}`).classList.remove('tab-active');
-                });
-                document.getElementById(`view-${tab}`).classList.remove('hidden');
-                document.getElementById(`tab-${tab}`).classList.add('tab-active');
-                document.getElementById('footer-chat').style.display = tab === 'chat' ? 'block' : 'none';
-            });
-        });
-
-        // FORGE IGNITION
-        igniteBtn.addEventListener('click', async () => {
-            igniteBtn.disabled = true;
-            igniteBtn.innerHTML = '<span class="animate-pulse">IGNITING...</span>';
-            forgeStatus.classList.remove('hidden');
-            forgeStep.textContent = "> ESTABLISHING HANDSHAKE...";
-
+        const messagesContainer = document.getElementById('chat-messages');
+        const chatForm = document.getElementById('chat-form');
+        const userInput = document.getElementById('user-input');
+        function updateClock() {
+            const options = { timeZone: 'America/Denver', hour: '2-digit', minute: '2-digit', hour12: false };
+            const now = new Intl.DateTimeFormat('en-US', options).format(new Date());
+            document.getElementById('header-clock').textContent = `${now} MT`;
+        }
+        setInterval(updateClock, 1000); updateClock(); lucide.createIcons();
+        function addMessage(text, role) {
+            const div = document.createElement('div');
+            div.className = `message-bubble ${role === 'user' ? 'message-user' : 'message-agent'}`;
+            div.textContent = text;
+            messagesContainer.appendChild(div);
+            document.getElementById('chat-container').scrollTop = document.getElementById('chat-container').scrollHeight;
+        }
+        document.getElementById('ignite-btn').addEventListener('click', async () => {
+            const btn = document.getElementById('ignite-btn');
+            btn.textContent = "FORGING..."; btn.classList.replace('bg-blue-600', 'bg-gray-400');
             try {
-                const trigger = functions.httpsCallable('triggerSovereignBuild');
-                const result = await trigger({});
-                
-                if (result.data.success) {
-                    forgeStep.innerHTML = '<span class="text-white">> FORGE IGNITION CONFIRMED.</span><br>> GITHUB_ACTION_TRIGGERED<br>> WATCHING REPO...';
-                    igniteBtn.innerHTML = '<i data-lucide="check" class="w-5 h-5"></i> SUCCESS';
-                    igniteBtn.classList.replace('forge-btn', 'bg-emerald-600');
-                } else {
-                    throw new Error(result.data.error);
+                const res = await fetch(`${GATEWAY_URL}/health`);
+                if (res.ok) {
+                    addMessage("Sovereign Forge pulse sent to Cloud Run Gateway.", "agent");
+                    btn.textContent = "DONE"; btn.classList.replace('bg-gray-400', 'bg-emerald-600');
                 }
-            } catch (err) {
-                forgeStep.textContent = `> ERROR: ${err.message || 'IGNITION_FAILED'}`;
-                igniteBtn.innerHTML = '<i data-lucide="alert-triangle" class="w-5 h-5"></i> RETRY';
-                igniteBtn.disabled = false;
-            }
+            } catch (e) { btn.textContent = "ERROR"; btn.classList.replace('bg-gray-400', 'bg-red-600'); }
             lucide.createIcons();
         });
-
-        // CHAT LOGIC
-        document.getElementById('chat-form').addEventListener('submit', (e) => {
+        chatForm.addEventListener('submit', (e) => {
             e.preventDefault();
-            const input = document.getElementById('user-input');
-            const text = input.value.trim();
+            const text = userInput.value.trim();
             if (!text) return;
-
-            const msg = document.createElement('div');
-            msg.className = "message-bubble message-user";
-            msg.textContent = text;
-            document.getElementById('chat-messages').appendChild(msg);
-            input.value = '';
-
-            setTimeout(() => {
-                const reply = document.createElement('div');
-                reply.className = "message-bubble message-agent";
-                reply.innerHTML = "Primary Control acknowledging mandata. Processing through <strong>Sentinel v1.2</strong>...";
-                document.getElementById('chat-messages').appendChild(reply);
-                document.getElementById('view-chat').scrollTop = document.getElementById('view-chat').scrollHeight;
-            }, 800);
+            addMessage(text, 'user'); userInput.value = '';
+            setTimeout(() => { addMessage("Mandate received by Cloud Sentinel. Syncing...", "agent"); }, 600);
         });
     </script>
 </body>
