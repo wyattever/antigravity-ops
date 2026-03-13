@@ -1,0 +1,31 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Sovereign Forge — LiteLLM Gateway (Cloud Run)
+# Replaces: local acp-gateway Docker container on M4
+# Target:   hazel-service-489900-f3 / Cloud Run
+# ─────────────────────────────────────────────────────────────────────────────
+FROM ghcr.io/berriai/litellm:main-latest
+
+WORKDIR /app
+
+# Copy ACP hooks (custom callbacks, MCP bridge)
+COPY acp_hooks/config.yaml /app/config.yaml
+COPY acp_hooks/custom_callbacks.py /app/custom_callbacks.py
+
+# Cloud Run requires listening on $PORT (default 8080)
+# LiteLLM defaults to 8000 — override via env
+ENV PORT=8080
+ENV LITELLM_LOG="INFO"
+
+# Database: injected at runtime via Cloud Run env vars
+# Required env vars (set in Cloud Run service):
+#   DATABASE_URL        → Cloud SQL connection string
+#   GEMINI_API_KEY      → from GCP Secret Manager
+#   LITELLM_MASTER_KEY  → gateway auth token
+
+EXPOSE 8080
+
+# Health check for Cloud Run readiness probe
+HEALTHCHECK --interval=30s --timeout=10s --start-period=15s --retries=3 \
+  CMD curl -f http://localhost:${PORT}/health || exit 1
+
+CMD ["sh", "-c", "litellm --config /app/config.yaml --port ${PORT} --host 0.0.0.0"]
