@@ -1,0 +1,64 @@
+{
+  "name": "acp-ui",
+  "publisher": "antigravity-ops",
+  "displayName": "Antigravity Control Plane (v2)",
+  "description": "ACP Control Plane",
+  "version": "0.0.2",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/wyattever/antigravity-ops.git"
+  },
+  "engines": {
+    "vscode": "^1.98.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./extension.js",
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "antigravity-sidebar",
+          "title": "Antigravity",
+          "icon": "$(rocket)"
+        }
+      ]
+    },
+    "views": {
+      "antigravity-sidebar": [
+        {
+          "id": "acp-observability-view",
+          "name": "Observability Webview",
+          "type": "webview"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "Antigravity Control Plane",
+      "properties": {
+        "antigravity.gatewayAddress": {
+          "type": "string",
+          "default": "http://localhost:8000",
+          "description": "Base URL of the ACP Gateway (LiteLLM proxy). Default: http://localhost:8000"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "lint": "eslint .",
+    "pretest": "npm run lint",
+    "test": "vscode-test"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.98.0",
+    "@types/mocha": "^10.0.10",
+    "@types/node": "22.x",
+    "eslint": "^9.39.3",
+    "@vscode/test-cli": "^0.0.12",
+    "@vscode/test-electron": "^2.5.2"
+  }
+}
